@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/twodu.co/static/css/main.526798f7.chunk.css",
-    "main.js": "/twodu.co/static/js/main.109bde2b.chunk.js",
-    "main.js.map": "/twodu.co/static/js/main.109bde2b.chunk.js.map",
+    "main.js": "/twodu.co/static/js/main.acbce23c.chunk.js",
+    "main.js.map": "/twodu.co/static/js/main.acbce23c.chunk.js.map",
     "runtime-main.js": "/twodu.co/static/js/runtime-main.f713aa8d.js",
     "runtime-main.js.map": "/twodu.co/static/js/runtime-main.f713aa8d.js.map",
     "static/js/2.f53de50c.chunk.js": "/twodu.co/static/js/2.f53de50c.chunk.js",
@@ -15,6 +15,6 @@
     "static/js/runtime-main.f713aa8d.js",
     "static/js/2.f53de50c.chunk.js",
     "static/css/main.526798f7.chunk.css",
-    "static/js/main.109bde2b.chunk.js"
+    "static/js/main.acbce23c.chunk.js"
   ]
 }
