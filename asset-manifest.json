@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.js": "/twodu/static/js/main.e20c6a77.chunk.js",
+    "main.js.map": "/twodu/static/js/main.e20c6a77.chunk.js.map",
+    "runtime-main.js": "/twodu/static/js/runtime-main.9fb71773.js",
+    "runtime-main.js.map": "/twodu/static/js/runtime-main.9fb71773.js.map",
+    "static/js/2.dba7cd6b.chunk.js": "/twodu/static/js/2.dba7cd6b.chunk.js",
+    "static/js/2.dba7cd6b.chunk.js.map": "/twodu/static/js/2.dba7cd6b.chunk.js.map",
+    "index.html": "/twodu/index.html",
+    "static/js/2.dba7cd6b.chunk.js.LICENSE.txt": "/twodu/static/js/2.dba7cd6b.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.9fb71773.js",
+    "static/js/2.dba7cd6b.chunk.js",
+    "static/js/main.e20c6a77.chunk.js"
+  ]
+}
