@@ -1,6 +1,6 @@
 {
   "name": "create-react-app-with-typescript",
-  "homepage": "http://charlieclark.github.io/twodu",
+  "homepage": "twodu.co",
   "version": "5.0.0",
   "private": true,
   "dependencies": {
@@ -9,6 +9,7 @@
     "@mui/material": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "node-sass": "^6.0.1",
     "react": "latest",
     "react-dom": "latest",
     "react-scripts": "latest",
