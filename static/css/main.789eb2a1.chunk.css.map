@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://src/components/Board/Board.module.scss"],"names":[],"mappings":"AAAA,wBACE,UAAW,CACX,WAAY,CACZ,YAAa,CACb,eAAgB,CACjB,yDAKC,eAAsB","file":"main.789eb2a1.chunk.css","sourcesContent":[".container {\n  width: 100%;\n  height: 100%;\n  display: flex;\n  overflow: hidden;\n}\n\n.row1,\n.row2,\n.row3 {\n  width: percentage(1/3);\n}\n"]}
