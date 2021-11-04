@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { Breadcrumbs, Card, Checkbox, Link } from "@mui/material";
+import { Breadcrumbs, Card, Checkbox, Link, Paper } from "@mui/material";
 import { TIMELINE_GROUPS } from "data/example";
 import { useGlobalDataContext } from "hooks/useGlobalData";
 import { get, partition } from "lodash";
@@ -140,8 +140,9 @@ const TodoGroupHolderInner = ({
       {items.length ? (
         items.map((todoId) => <TodoCell key={todoId} id={todoId} />)
       ) : (
-        // height must be less than card height
-        <div style={{ width: "100%", height: 20, background: "gray" }} />
+        <Paper elevation={0} className={styles.emptyState}>
+          Drag a task to get started
+        </Paper>
       )}
     </div>
   );
@@ -158,9 +159,8 @@ const TodoGroupHolder = ({
     .filter((todoId) => todoDict[todoId].status !== "done")
     .map((todoId) => appendPrefix(todoId, DD_TYPES.todoTimeline));
 
-  return (
-    <div style={{ marginBottom: 50 }}>
-      <div>{name}</div>
+  const inner = (
+    <div>
       <SortableContext
         id={id}
         items={items}
@@ -169,6 +169,17 @@ const TodoGroupHolder = ({
         <TodoGroupHolderInner items={items} id={id} />
       </SortableContext>
     </div>
+  );
+
+  if (id === TG_ALL) {
+    return inner;
+  }
+
+  return (
+    <Card className={styles.groupHolder}>
+      <div className={styles.groupTitle}>{name}</div>
+      {inner}
+    </Card>
   );
 };
 

@@ -8,6 +8,7 @@ import Board from "components/Board";
 import { GlobalDataProvider, useGlobalDataContext } from "hooks/useGlobalData";
 import { GlobalStateProvider } from "hooks/useGlobalState";
 import styles from "./App.module.scss";
+import { AppBar, Toolbar, Typography } from "@mui/material";
 
 const EmptyState = () => {
   const { todoTreeArray, addTodo } = useGlobalDataContext();
@@ -30,9 +31,13 @@ const EmptyState = () => {
 
 const Nav = () => {
   return (
-    <div className={styles.nav}>
-      <div className={styles.logo}>Logo</div>
-    </div>
+    <AppBar position="static" className={styles.nav}>
+      <Toolbar variant="dense">
+        <Typography variant="h6" color="inherit" component="div">
+          2doos
+        </Typography>
+      </Toolbar>
+    </AppBar>
   );
 };
 

@@ -49,6 +49,15 @@ export const TodoCellInner = ({
   const { name, status, children, allChildren } = todo;
   const { updateCurrentTodo } = useCurrentTodo();
 
+  const { activeDrag } = useGlobalStateContext();
+
+  const isDroppable =
+    activeDrag &&
+    activeDrag.type === DD_TYPES.todoProject &&
+    activeDrag.containerId?.startsWith(TodoTypes.todo) &&
+    todoDict[id].children.length > 0 &&
+    activeDrag.id !== id;
+
   const isChecked = children.length === 0 && status === "done";
 
   const unfinishedCount = allChildren.filter((id) =>
@@ -59,6 +68,7 @@ export const TodoCellInner = ({
     <Card
       className={classNames(styles.todo, {
         [styles.isChecked]: isChecked,
+        [styles.isDroppable]: isDroppable,
       })}
     >
       <div className={styles.left}>

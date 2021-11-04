@@ -14,9 +14,12 @@
 
 .row2 {
   width: percentage(1.5/4);
+  background: $colorCol1Bg;
+  border-left: $border1;
+  border-right: $border1;
 }
 
 .row3 {
-  background: #f9f9f9;
   width: percentage(1.5/4);
+  background: $colorCol1Bg;
 }

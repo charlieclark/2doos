@@ -58,8 +58,6 @@ const Folder = ({
     data: { type: DD_TYPES.project, id },
   });
 
-  console.log({ isOver });
-
   const unfinishedCount = allChildren.filter((id) =>
     isUnfinishedTask(todoDict[id])
   ).length;
@@ -70,7 +68,7 @@ const Folder = ({
         <div
           className={classNames(styles.folderItem, {
             [styles.isDroppable]: isDroppable,
-            [styles.isOver]: isOver,
+            // [styles.isOver]: isOver,
           })}
           ref={setNodeRef}
           onClick={(e) => {
