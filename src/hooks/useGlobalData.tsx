@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as ls from "local-storage";
 import { TEST_DATA, TIMELINE_GROUPS } from "data/example";
 import {
   TodoDict,
@@ -13,6 +14,7 @@ import {
 import { createGenericContext } from "utils/createGenericContext";
 import { prepareData } from "utils/prepareData";
 import { arrayMove } from "@dnd-kit/sortable";
+import { getAllChildren } from "utils/selectors";
 
 type UseGlobalData = {
   todoDict: TodoDict;
@@ -22,15 +24,27 @@ type UseGlobalData = {
   reorderTodos: (id1: string, id2: string) => void;
   reorderGroupTodos: (groupId: string, id1: string, id2: string) => void;
   moveIntoFolder: (sourceId: string, destId: string) => void;
-  addTodo: (parentId?: string, data?: TodoCreate) => void;
+  addTodo: (
+    parentId?: string,
+    data?: TodoCreate,
+    addToBottom?: boolean
+  ) => void;
   editTodo: (id: string, changes: TodoEdit) => void;
+  editTodos: (
+    ids: string[],
+    cb: (todo: Todo, index: number) => TodoEdit
+  ) => void;
+  deleteTodo: (id: string) => void;
 };
 
 const [useGlobalDataContext, GlobalDataContextProvider] =
   createGenericContext<UseGlobalData>();
 
 const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
-  const [storedTodos, setStoredTodos] = React.useState<Todo[]>(TEST_DATA);
+  const [storedTodos, setStoredTodosRaw] = React.useState<Todo[]>(
+    ls.get("todos") || []
+  );
+
   const [storedGroups, setStoredGroups] =
     React.useState<TodoGroup[]>(TIMELINE_GROUPS);
 
@@ -38,6 +52,11 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     storedTodos,
     storedGroups
   );
+
+  const setStoredTodos = (todos: Todo[]) => {
+    setStoredTodosRaw(todos);
+    ls.set("todos", todos);
+  };
 
   const reorderTodos = (id1: string, id2: string) => {
     const index1 = storedTodos.findIndex((todo) => todo.id === id1);
@@ -74,6 +93,9 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const moveIntoFolder = (sourceId: string, destId: string) => {
+    if (sourceId === destId) {
+      return;
+    }
     setStoredTodos([
       {
         ...storedTodos.find((todo) => todo.id === sourceId)!,
@@ -90,21 +112,26 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     ]);
   };
 
-  const addTodo = (parentId?: string, data?: TodoCreate) => {
+  const addTodo = (
+    parentId?: string,
+    data?: TodoCreate,
+    addToBottom?: boolean
+  ) => {
+    const newTodo = generateTodoTree({
+      name: "New Todo",
+      notes: "",
+      parentId,
+      ...data,
+    });
     setStoredTodos([
-      generateTodoTree({
-        name: "New Todo",
-        notes: "",
-        children: [],
-        parentId,
-        ...data,
-      }),
+      ...(!addToBottom ? [newTodo] : []),
       ...storedTodos.map((todo) => {
         if (todo.id === parentId) {
           return { ...todo, status: undefined };
         }
         return todo;
       }),
+      ...(addToBottom ? [newTodo] : []),
     ]);
   };
 
@@ -122,6 +149,31 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
+  const editTodos = (
+    ids: string[],
+    cb: (todo: Todo, index: number) => TodoEdit
+  ) => {
+    setStoredTodos(
+      storedTodos.map((todo, index) => {
+        if (ids.includes(todo.id)) {
+          return {
+            ...todo,
+            ...cb(todo, index),
+          };
+        }
+        return todo;
+      })
+    );
+  };
+
+  const deleteTodo = (id: string) => {
+    setStoredTodos(
+      storedTodos.filter((todo) => {
+        return !todoDict[id].allChildren.includes(todo.id);
+      })
+    );
+  };
+
   return (
     <GlobalDataContextProvider
       value={{
@@ -134,6 +186,8 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
         moveIntoFolder,
         addTodo,
         editTodo,
+        editTodos,
+        deleteTodo,
       }}
     >
       {children}

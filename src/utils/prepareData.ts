@@ -7,11 +7,16 @@ import {
   TodoGroup,
 } from "types";
 import { keyBy } from "lodash";
-import { todoTreeIsFolder } from "./selectors";
+import { getAllChildren, getParentsArray, todoTreeIsFolder } from "./selectors";
 
 export const prepareData = (flatTodos: Todo[], groups: TodoGroup[]) => {
   const todoDict: TodoDict = keyBy(
-    flatTodos.map((todo) => ({ ...todo, children: [] })),
+    flatTodos.map((todo) => ({
+      ...todo,
+      children: [],
+      parents: [],
+      allChildren: [],
+    })),
     "id"
   );
 
@@ -37,6 +42,12 @@ export const prepareData = (flatTodos: Todo[], groups: TodoGroup[]) => {
   [...flatTodos]
     .sort((a, b) => a.orderIndex - b.orderIndex)
     .forEach((todo) => {
+      const parents = getParentsArray(todoDict[todo.id], todoDict);
+      const allChildren = getAllChildren(todoDict[todo.id]);
+      
+      todoDict[todo.id].parents = parents;
+      todoDict[todo.id].allChildren = allChildren;
+
       if (todoTreeIsFolder(todoDict[todo.id])) {
         return;
       } else if (!todo.timelineGroup) {

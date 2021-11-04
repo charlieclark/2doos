@@ -1,0 +1,65 @@
+@import "variables";
+
+.name {
+  margin-bottom: $majorGrid;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.notes {
+  margin-bottom: $majorGrid;
+}
+
+.divider {
+  margin: $majorGrid * 2 0 !important;
+}
+
+.todo {
+  display: flex;
+  margin-bottom: $majorGrid;
+  height: 55px;
+
+  &.isChecked {
+    opacity: 0.5;
+
+    .nameEditor {
+      text-decoration: line-through;
+    }
+
+    .drag {
+      pointer-events: none;
+    }
+  }
+
+  .left {
+    display: flex;
+    flex: 1;
+  }
+
+  .nameEditor {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .iconWrapper {
+    display: flex;
+    flex-shrink: 0;
+    width: 55px;
+    align-items: center;
+    justify-content: center;
+    border-left: $border1;
+  }
+
+  .drag {
+    display: flex;
+    align-items: center;
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 $majorGrid;
+    cursor: pointer;
+  }
+}

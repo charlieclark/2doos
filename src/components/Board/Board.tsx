@@ -2,8 +2,12 @@ import { Redirect } from "react-router-dom";
 import { useGlobalDataContext } from "hooks/useGlobalData";
 import styles from "./Board.module.scss";
 import ColOne, { ProjectInner } from "./components/ColOne";
-import ColTwo, { TodoCellInner } from "./components/ColTwo";
-import ColThree from "./components/ColThree";
+import ColTwo, {
+  TodoCellInner as TodoCellInnerColTwo,
+} from "./components/ColTwo";
+import ColThree, {
+  TodoCellInner as TodoCellInnerColThree,
+} from "./components/ColThree";
 import {
   DndContext,
   closestCenter,
@@ -21,8 +25,17 @@ import {
 } from "@dnd-kit/sortable";
 import { useGlobalStateContext } from "hooks/useGlobalState";
 import { get } from "lodash";
-import { TodoTypes } from "types";
+import {
+  ActiveDrag,
+  DD_TYPES,
+  getDragEventData,
+  removePrefix,
+  TG_ALL,
+  TodoTypes,
+} from "types";
 import useCurrentTodo from "hooks/useCurrentTodo";
+import { getAllLeafIds } from "utils/selectors";
+import ColumnInner from "utils/components/ColumnInner";
 
 const Projects = () => {
   const sensors = useSensors(
@@ -33,16 +46,33 @@ const Projects = () => {
   );
 
   const { todoId: currentTodoId } = useCurrentTodo();
-  const { setActiveDragTodoId, activeDragTodoId } = useGlobalStateContext();
-  const { reorderTodos, moveIntoFolder } = useGlobalDataContext();
+  const { setActiveDrag, clearActiveDrag, activeDrag } =
+    useGlobalStateContext();
+  const {
+    todoGroupsTree,
+    reorderTodos,
+    moveIntoFolder,
+    editTodo,
+    editTodos,
+    reorderGroupTodos,
+    todoDict,
+  } = useGlobalDataContext();
+
+  const moveTodoGroup = (todoId: string, groupId: string) => {
+    const leafIds = getAllLeafIds(todoDict[todoId]);
+
+    editTodos(leafIds, (todo, index) => ({
+      timelineGroup: groupId === TG_ALL ? undefined : groupId,
+      orderIndex: todoGroupsTree[groupId].length + index,
+    }));
+  };
 
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={(event) => {
-        console.log("start", event.active.id);
-        setActiveDragTodoId(event.active.id);
+        setActiveDrag(event.active);
       }}
       onDragOver={(event) => {
         const { active, over } = event;
@@ -51,54 +81,84 @@ const Projects = () => {
           return;
         }
 
-        return;
+        const activeData = getDragEventData(active);
+        const overData = getDragEventData(over);
+
+        if (activeData.type === DD_TYPES.todoTimeline) {
+          if (activeData.containerId === overData.containerId) {
+            return;
+          } else if (overData.containerId) {
+            console.log("move ovr container inner", overData.containerId);
+            moveTodoGroup(activeData.id, overData.containerId);
+          } else if (activeData.containerId !== overData.id) {
+            console.log("move ovr container", overData.id);
+            moveTodoGroup(activeData.id, overData.id);
+          }
+        }
       }}
       onDragEnd={(event) => {
         const { active, over } = event;
 
-        console.log("drag end");
-
-        setActiveDragTodoId(undefined);
+        clearActiveDrag();
 
         if (!over) {
           return;
         }
 
-        const containerPath = "data.current.sortable.containerId";
-        const folderPath = "data.current.folderId";
+        const activeData = getDragEventData(active);
+        const overData = getDragEventData(over);
 
-        if (active.id.startsWith("project")) {
-          if (over.id.startsWith("project")) {
-            reorderTodos(
-              active.id.replace("project-", ""),
-              over.id.replace("project-", "")
+        if (activeData.type === DD_TYPES.project) {
+          if (overData.type === DD_TYPES.project) {
+            reorderTodos(activeData.id, overData.id);
+          } else if (
+            overData.type === DD_TYPES.todoTimelineGroup ||
+            overData.type === DD_TYPES.todoTimeline
+          ) {
+            const groupId = overData.containerId || overData.id;
+            moveTodoGroup(activeData.id, groupId);
+          }
+        } else if (activeData.type === DD_TYPES.todoProject) {
+          if (overData.type === DD_TYPES.todoProject) {
+            if (activeData.containerId === overData.containerId) {
+              reorderTodos(activeData.id, overData.id);
+            } else if (
+              activeData.containerId?.startsWith(TodoTypes.todo) &&
+              overData.containerId?.startsWith(TodoTypes.folder)
+            ) {
+              moveIntoFolder(activeData.id, overData.id);
+            }
+          } else if (overData.type === DD_TYPES.project) {
+            moveIntoFolder(active.id, overData.id);
+          } else if (
+            overData.type === DD_TYPES.todoTimelineGroup ||
+            overData.type === DD_TYPES.todoTimeline
+          ) {
+            const groupId = overData.containerId || overData.id;
+            moveTodoGroup(activeData.id, groupId);
+          }
+        } else if (activeData.type === DD_TYPES.todoTimeline) {
+          if (overData.type === DD_TYPES.todoTimeline && overData.containerId) {
+            reorderGroupTodos(
+              activeData.containerId!,
+              activeData.id,
+              overData.id
             );
           }
-        } else if (get(active, containerPath) === get(over, containerPath)) {
-          reorderTodos(active.id, over.id);
-        } else if (
-          get(active, containerPath, "").startsWith(TodoTypes.todo) &&
-          get(over, containerPath, "").startsWith(TodoTypes.folder)
-        ) {
-          console.log("move into folder");
-          moveIntoFolder(active.id, over.id);
-        } else if (get(over, folderPath)) {
-          moveIntoFolder(active.id, get(over, folderPath));
         }
       }}
     >
-      <div className={styles.row1}>
-        <ColOne />
-      </div>
-      <div className={styles.row2}>
-        <ColTwo key={currentTodoId} />
-      </div>
-      <DragOverlay>
-        {activeDragTodoId ? (
-          activeDragTodoId.startsWith("project") ? (
-            <ProjectInner id={activeDragTodoId} />
+      <ColOne className={styles.row1} />
+      <ColTwo className={styles.row2} key={currentTodoId} />
+      <ColThree className={styles.row3} />
+      <DragOverlay dropAnimation={null}>
+        {activeDrag ? (
+          activeDrag.type === DD_TYPES.project ? (
+            <ProjectInner id={activeDrag.id} />
+          ) : activeDrag.type === DD_TYPES.todoProject ? (
+            <TodoCellInnerColTwo id={activeDrag.id} />
           ) : (
-            <TodoCellInner id={activeDragTodoId} />
+            <TodoCellInnerColThree id={activeDrag.id} />
           )
         ) : null}
       </DragOverlay>
@@ -114,9 +174,6 @@ const Board = () => {
   return (
     <div className={styles.container}>
       <Projects />
-      <div className={styles.row3}>
-        <ColThree />
-      </div>
     </div>
   );
 };

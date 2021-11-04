@@ -1,0 +1,16 @@
+@import "variables";
+
+.nav {
+  height: $navHeight;
+  width: 100%;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  padding: 0 $majorGrid * 2;
+}
+
+.app {
+  height: calc(100vh - #{$navHeight});
+  position: relative;
+  overflow: hidden;
+}

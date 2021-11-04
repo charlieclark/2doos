@@ -1,0 +1,50 @@
+@import "variables";
+
+.card {
+  margin-bottom: $majorGrid;
+
+  .breadCrumbs {
+    display: flex;
+    font-size: 12px;
+    background: #f1f1f1;
+    padding: $majorGrid/2 $majorGrid/2;
+
+    .carrat {
+      margin: 0 $majorGrid/2;
+    }
+
+    .link {
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .middle {
+    display: flex;
+  }
+
+  .name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border-right: $border1;
+    border-left: $border1;
+    padding: $majorGrid;
+    cursor: pointer;
+  }
+
+  .breadCrumbs {
+  }
+
+  // .bottom {
+  //   display: flex;
+  // }
+}

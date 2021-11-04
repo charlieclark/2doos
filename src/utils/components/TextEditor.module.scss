@@ -1,0 +1,14 @@
+@import "variables";
+
+.preview {
+  background: rgba(black, 0.01);
+  padding: $majorGrid;
+  border: solid 1px rgba(black, 0.03);
+  cursor: text;
+}
+
+.textArea {
+  font-family: inherit;
+  padding: $majorGrid;
+  width: 100%;
+}

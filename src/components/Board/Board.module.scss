@@ -1,3 +1,5 @@
+@import "variables";
+
 .container {
   width: 100%;
   height: 100%;
@@ -5,8 +7,16 @@
   overflow: hidden;
 }
 
-.row1,
-.row2,
+.row1 {
+  width: percentage(1/4);
+  background: $colorCol1Bg;
+}
+
+.row2 {
+  width: percentage(1.5/4);
+}
+
 .row3 {
-  width: percentage(1/3);
+  background: #f9f9f9;
+  width: percentage(1.5/4);
 }

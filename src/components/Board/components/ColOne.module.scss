@@ -1,0 +1,46 @@
+@import "variables";
+
+.projects {
+  padding-top: $majorGrid;
+}
+
+.folderItem {
+  display: flex;
+  background: $colorCol1Bg;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+
+  &.isDroppable {
+    &::after {
+      content: "";
+      display: block;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      bottom: -5px;
+      left: -5px;
+      background: rgba(teal, 0.1);
+      border-radius: 5px;
+      z-index: 10;
+    }
+    &.isOver {
+      &::after {
+        background: rgba(teal, 0.5);
+      }
+    }
+  }
+
+  .left {
+    display: flex;
+    justify-content: center;
+  }
+  .name {
+    margin-left: $majorGrid * 2;
+    &.isActive {
+      text-decoration: underline;
+    }
+  }
+  margin-bottom: $majorGrid * 2;
+}

@@ -15,33 +15,88 @@ import {
   verticalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { Card } from "@mui/material";
+import { Breadcrumbs, Card, Checkbox, Link } from "@mui/material";
 import { TIMELINE_GROUPS } from "data/example";
 import { useGlobalDataContext } from "hooks/useGlobalData";
 import { get, partition } from "lodash";
-import { TG_ALL, TodoGroup } from "types";
+import {
+  ActiveDrag,
+  appendPrefix,
+  DD_TYPES,
+  removePrefix,
+  TG_ALL,
+  TodoGroup,
+} from "types";
 import { todoTreeIsFolder } from "utils/selectors";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { useGlobalStateContext } from "hooks/useGlobalState";
+import useCurrentTodo from "hooks/useCurrentTodo";
+import ColumnInner from "utils/components/ColumnInner";
+import styles from "./ColThree.module.scss";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 
-const TodoCellInner = ({ id, listeners }: { id: string; listeners?: any }) => {
-  const { todoDict } = useGlobalDataContext();
+export const TodoCellInner = ({
+  id,
+  listeners,
+}: {
+  id: string;
+  listeners?: any;
+}) => {
+  const { todoDict, editTodo } = useGlobalDataContext();
+  const { updateCurrentTodo } = useCurrentTodo();
   const todo = todoDict[id];
   return (
-    <Card>
-      <div
-        {...listeners}
-        style={{ width: 10, height: 10, background: "red" }}
-      ></div>
-      <div>{todo.name}</div>
+    <Card
+      className={styles.card}
+      onClick={() => {
+        updateCurrentTodo(id);
+      }}
+    >
+      <div className={styles.breadCrumbs}>
+        {[...todo.parents].reverse().map((todoParent) => (
+          <>
+            <div className={styles.carrat}>›</div>
+            <div
+              className={styles.link}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateCurrentTodo(todoParent);
+              }}
+            >
+              {todoDict[todoParent].name}
+            </div>
+          </>
+        ))}
+      </div>
+      <div className={styles.middle}>
+        <div className={styles.iconWrapper} {...listeners}>
+          <DragIndicatorIcon />
+        </div>
+
+        <div className={styles.name}>{todo.name}</div>
+        <div className={styles.iconWrapper}>
+          <Checkbox
+            onClick={(e) => {
+              e.stopPropagation();
+              editTodo(id, { status: "done" });
+            }}
+          />
+        </div>
+      </div>
     </Card>
   );
 };
 
-const TodoCell = ({ id }: { id: string }) => {
+const TodoCell = ({ id, disabled }: { id: string; disabled?: boolean }) => {
+  const todoId = removePrefix(id, DD_TYPES.todoTimeline);
+
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+    useSortable({
+      id,
+      data: { type: DD_TYPES.todoTimeline, id: todoId },
+      disabled,
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -50,110 +105,82 @@ const TodoCell = ({ id }: { id: string }) => {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <TodoCellInner id={id} listeners={listeners} />
+      <TodoCellInner id={todoId} listeners={listeners} />
+    </div>
+  );
+};
+
+const TodoGroupHolderInner = ({
+  items,
+  id,
+}: {
+  items: string[];
+  id: string;
+}) => {
+  const { activeDrag } = useGlobalStateContext();
+  const { todoGroupsTree } = useGlobalDataContext();
+
+  const isDroppableDisabled =
+    activeDrag &&
+    activeDrag.type === DD_TYPES.todoTimeline &&
+    todoGroupsTree[id].includes(activeDrag.id);
+
+  const { setNodeRef } = useDroppable({
+    id: appendPrefix(id, DD_TYPES.todoTimelineGroup),
+    disabled: isDroppableDisabled,
+
+    data: {
+      type: DD_TYPES.todoTimelineGroup,
+      id,
+    },
+  });
+
+  return (
+    <div ref={setNodeRef}>
+      {items.length ? (
+        items.map((todoId) => <TodoCell key={todoId} id={todoId} />)
+      ) : (
+        // height must be less than card height
+        <div style={{ width: "100%", height: 20, background: "gray" }} />
+      )}
     </div>
   );
 };
 
 const TodoGroupHolder = ({
   todoGroup: { id, name },
-  activeSortId,
 }: {
   todoGroup: TodoGroup;
-  activeSortId?: string;
 }) => {
-  const { todoGroupsTree } = useGlobalDataContext();
-  const { setNodeRef } = useDroppable({
-    id,
-    disabled: !!activeSortId && todoGroupsTree[id].includes(activeSortId),
-  });
-  const items = todoGroupsTree[id];
+  const { todoGroupsTree, todoDict } = useGlobalDataContext();
+
+  const items = todoGroupsTree[id]
+    .filter((todoId) => todoDict[todoId].status !== "done")
+    .map((todoId) => appendPrefix(todoId, DD_TYPES.todoTimeline));
+
   return (
-    <div
-      style={{
-        minHeight: 200,
-        background: "#eee",
-        marginBottom: 20,
-        maxHeight: 300,
-        overflow: "auto",
-      }}
-    >
+    <div style={{ marginBottom: 50 }}>
       <div>{name}</div>
       <SortableContext
         id={id}
         items={items}
         strategy={verticalListSortingStrategy}
       >
-        <div ref={setNodeRef}>
-          {items.map((todoId) => (
-            <TodoCell key={todoId} id={todoId} />
-          ))}
-        </div>
+        <TodoGroupHolderInner items={items} id={id} />
       </SortableContext>
     </div>
   );
 };
 
-const ColThree = () => {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const [activeSortId, setActiveSortId] = useState<string>();
-
-  const { todoGroups, todoGroupsTree, reorderGroupTodos, editTodo } =
-    useGlobalDataContext();
-
-  const containerIdPath = "data.current.sortable.containerId";
-
-  const moveTodoGroup = (todoId: string, groupId: string) => {
-    editTodo(todoId, {
-      timelineGroup: groupId === TG_ALL ? undefined : groupId,
-      orderIndex: todoGroupsTree[groupId].length,
-    });
-  };
+const ColThree = ({ className }: { className: string }) => {
+  const { todoGroups } = useGlobalDataContext();
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={({ active }) => {
-        setActiveSortId(active.id);
-      }}
-      onDragEnd={({ active, over }) => {
-        if (over) {
-          reorderGroupTodos(get(active, containerIdPath), active.id, over.id);
-        }
-        setActiveSortId(undefined);
-      }}
-      onDragOver={({ active, over }) => {
-        console.log(active.id, over && over.id);
-        if (!over) {
-          return;
-        }
-        if (get(active, containerIdPath) === get(over, containerIdPath)) {
-          return;
-        } else if (get(over, containerIdPath)) {
-          moveTodoGroup(active.id, get(over, containerIdPath));
-        } else {
-          moveTodoGroup(active.id, over.id);
-        }
-      }}
-    >
+    <ColumnInner className={className}>
       {Object.values(todoGroups).map((todoGroup) => (
-        <TodoGroupHolder
-          activeSortId={activeSortId}
-          key={todoGroup.id}
-          todoGroup={todoGroup}
-        />
+        <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
       ))}
-      <DragOverlay>
-        {activeSortId ? <TodoCellInner id={activeSortId} /> : null}
-      </DragOverlay>
-    </DndContext>
+    </ColumnInner>
   );
 };
 
