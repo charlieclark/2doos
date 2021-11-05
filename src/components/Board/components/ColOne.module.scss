@@ -1,9 +1,5 @@
 @import "variables";
 
-.projects {
-  padding-top: $majorGrid;
-}
-
 .folderItem {
   display: flex;
   background: $colorCol1Bg;
@@ -11,6 +7,7 @@
   align-items: center;
   position: relative;
   cursor: pointer;
+  padding: $majorGrid * 0.25;
 
   &.isDroppable {
     &::after {
@@ -37,10 +34,15 @@
     justify-content: center;
   }
   .name {
-    margin-left: $majorGrid * 2;
+    margin-left: $majorGrid * 1;
     &.isActive {
       text-decoration: underline;
     }
+
+    &.isProject {
+      font-size: 18px;
+      font-weight: bold;
+    }
   }
-  margin-bottom: $majorGrid * 2;
+  margin-bottom: $majorGrid * 1;
 }

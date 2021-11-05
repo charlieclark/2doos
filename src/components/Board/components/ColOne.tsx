@@ -18,6 +18,7 @@ import {
   Badge,
   Button,
   Card,
+  Chip,
   List,
   ListItemButton,
   ListItemIcon,
@@ -26,17 +27,17 @@ import {
 import ColumnInner from "utils/components/ColumnInner";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import styles from "./ColOne.module.scss";
 import classNames from "classnames";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const Folder = ({
   todoTree,
   indentation = 0,
-  listeners,
 }: {
   todoTree: TodoTree;
   indentation?: number;
-  listeners?: any;
 }) => {
   const { id, name, children, allChildren } = todoTree;
   const { todoId, updateCurrentTodo } = useCurrentTodo();
@@ -58,17 +59,25 @@ const Folder = ({
     data: { type: DD_TYPES.project, id },
   });
 
-  const unfinishedCount = allChildren.filter((id) =>
+  const isRoot = indentation === 0;
+
+  const unfinishedCountAll = allChildren.filter((id) =>
     isUnfinishedTask(todoDict[id])
   ).length;
 
+  const unfinishedCount = children.filter(({ id }) =>
+    isUnfinishedTask(todoDict[id])
+  ).length;
+
+  const showBadge = unfinishedCount > 0;
+
   return (
     <>
-      <div style={{ paddingLeft: indentation * 10 }}>
+      <div style={{ paddingLeft: indentation * 20 }}>
         <div
           className={classNames(styles.folderItem, {
             [styles.isDroppable]: isDroppable,
-            // [styles.isOver]: isOver,
+            [styles.isOver]: isOver,
           })}
           ref={setNodeRef}
           onClick={(e) => {
@@ -78,25 +87,28 @@ const Folder = ({
         >
           <div className={styles.left}>
             <Badge
-              color={unfinishedCount ? "warning" : "success"}
+              invisible={!showBadge}
+              color={"warning"}
               badgeContent={unfinishedCount}
-              showZero
+              variant="dot"
             >
               <FolderOpenIcon className={styles.folderIcon} />
             </Badge>
             <div
               className={classNames(styles.name, {
                 [styles.isActive]: isActive,
+                [styles.isProject]: indentation === 0,
               })}
             >
               {name}
             </div>
           </div>
-          {indentation === 0 && <DragIndicatorIcon {...listeners} />}
         </div>
       </div>
       {(() => {
-        const items = children.filter(todoTreeIsFolder);
+        const items = children.filter(
+          (todo) => todoTreeIsFolder(todo) || isUnfinishedTask(todo)
+        );
         return (
           !isDraggingProject &&
           !!items.length && (
@@ -116,46 +128,15 @@ const Folder = ({
   );
 };
 
-export const ProjectInner = ({
-  id,
-  listeners,
-}: {
-  id: string;
-  listeners?: any;
-}) => {
+export const ProjectInner = ({ id }: { id: string }) => {
   const { todoDict } = useGlobalDataContext();
   const todoId = id;
 
-  return <Folder todoTree={todoDict[todoId]} listeners={listeners} />;
-};
-
-const Project = ({ id }: { id: string }) => {
-  const todoId = id.replace("project-", "");
-
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({
-      id,
-      data: { type: DD_TYPES.project, id: todoId },
-    });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <ProjectInner id={todoId} listeners={listeners} />
-    </div>
-  );
+  return <Folder todoTree={todoDict[todoId]} />;
 };
 
 const ColOne = ({ className }: { className: string }) => {
   const { todoTreeArray, addTodo } = useGlobalDataContext();
-
-  const projects = todoTreeArray.map(({ id }) => ({
-    id: `project-${id}`,
-  }));
 
   return (
     <ColumnInner
@@ -171,17 +152,11 @@ const ColOne = ({ className }: { className: string }) => {
         </Button>
       }
     >
-      <SortableContext
-        id={"reorder-projects"}
-        items={projects}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className={styles.projects}>
-          {projects.map(({ id }) => (
-            <Project key={id} id={id} />
-          ))}
-        </div>
-      </SortableContext>
+      <div className={styles.projects}>
+        {todoTreeArray.map(({ id }) => (
+          <ProjectInner key={id} id={id} />
+        ))}
+      </div>
     </ColumnInner>
   );
 };

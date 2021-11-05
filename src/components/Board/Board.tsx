@@ -16,6 +16,8 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
+  closestCorners,
+  rectIntersection,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -36,6 +38,7 @@ import {
 import useCurrentTodo from "hooks/useCurrentTodo";
 import { getAllLeafIds } from "utils/selectors";
 import ColumnInner from "utils/components/ColumnInner";
+
 
 const Projects = () => {
   const sensors = useSensors(
@@ -70,7 +73,7 @@ const Projects = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      // collisionDetection={closestCorners}
       onDragStart={(event) => {
         setActiveDrag(event.active);
       }}

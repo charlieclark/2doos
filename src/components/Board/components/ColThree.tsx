@@ -141,7 +141,7 @@ const TodoGroupHolderInner = ({
         items.map((todoId) => <TodoCell key={todoId} id={todoId} />)
       ) : (
         <Paper elevation={0} className={styles.emptyState}>
-          Drag a task to get started
+          Drag a task
         </Paper>
       )}
     </div>

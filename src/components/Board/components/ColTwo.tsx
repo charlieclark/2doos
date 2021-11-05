@@ -35,14 +35,17 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import classNames from "classnames";
 
 export const TodoCellInner = ({
   id,
   listeners,
+  attributes
 }: {
   id: string;
   listeners?: any;
+  attributes?: any;
 }) => {
   const { todoDict, editTodo, deleteTodo } = useGlobalDataContext();
   const todo = todoDict[id];
@@ -72,7 +75,7 @@ export const TodoCellInner = ({
       })}
     >
       <div className={styles.left}>
-        <div className={styles.drag} {...listeners}>
+        <div className={styles.drag} {...listeners} {...attributes}>
           <DragIndicatorIcon />
         </div>
         <div className={styles.iconWrapper}>
@@ -88,9 +91,9 @@ export const TodoCellInner = ({
             />
           ) : (
             <Badge
-              color={unfinishedCount ? "warning" : "success"}
+              invisible={unfinishedCount === 0}
+              color={"warning"}
               badgeContent={unfinishedCount}
-              showZero
             >
               <FolderOpenIcon className={styles.folderIcon} />
             </Badge>
@@ -120,8 +123,8 @@ const TodoCell = ({ id }: { id: string }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <TodoCellInner id={id} listeners={listeners} />
+    <div ref={setNodeRef} style={style}>
+      <TodoCellInner id={id} listeners={listeners} attributes={attributes} />
     </div>
   );
 };
