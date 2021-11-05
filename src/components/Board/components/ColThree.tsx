@@ -57,19 +57,24 @@ import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import classNames from "classnames";
 import { Box } from "@mui/system";
+import getIconForTodo from "utils/getIconForTodo";
 
 export const TodoCellInner = ({
   id,
   listeners,
-  isDragOverlay,
+  isSearch,
 }: {
   id: string;
   listeners?: any;
-  isDragOverlay?: boolean;
+  isSearch?: boolean;
 }) => {
   const { todoDict, editTodo } = useGlobalDataContext();
   const { updateCurrentTodo } = useCurrentTodo();
   const todo = todoDict[id];
+
+  const isTask = todoTreeIsTask(todo);
+
+  const Icon = getIconForTodo(todo);
 
   return (
     <Card
@@ -95,25 +100,31 @@ export const TodoCellInner = ({
         ))}
       </div>
       <div className={styles.middle}>
-        <div
-          style={{ cursor: "move" }}
-          className={styles.iconWrapper}
-          {...listeners}
-        >
-          <DragIndicatorIcon />
-        </div>
+        {!isSearch && (
+          <div
+            style={{ cursor: "move" }}
+            className={styles.iconWrapper}
+            {...listeners}
+          >
+            <DragIndicatorIcon />
+          </div>
+        )}
 
         <div className={styles.name}>{todo.name}</div>
         <div className={styles.iconWrapper}>
-          <Checkbox
-            checked={todo.status === "done"}
-            onClick={(e) => {
-              e.stopPropagation();
-              editTodo(id, {
-                status: todo.status === "done" ? undefined : "done",
-              });
-            }}
-          />
+          {!isSearch ? (
+            <Checkbox
+              checked={todo.status === "done"}
+              onClick={(e) => {
+                e.stopPropagation();
+                editTodo(id, {
+                  status: todo.status === "done" ? undefined : "done",
+                });
+              }}
+            />
+          ) : (
+            <Icon className={styles.iconNonCheck} />
+          )}
         </div>
       </div>
     </Card>
@@ -281,7 +292,7 @@ export const SearchScreen = ({ search }: { search?: string }) => {
           <Card>No results found</Card>
         ) : (
           todosToShow.map((todo) => (
-            <TodoCellInner key={todo.id} id={todo.id} />
+            <TodoCellInner isSearch key={todo.id} id={todo.id} />
           ))
         )}
       </Container>

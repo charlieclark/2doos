@@ -171,7 +171,7 @@ const Projects = () => {
           ) : activeDrag.type === DD_TYPES.todoProject ? (
             <TodoCellInnerColTwo id={activeDrag.id} />
           ) : (
-            <TodoCellInnerColThree isDragOverlay id={activeDrag.id} />
+            <TodoCellInnerColThree id={activeDrag.id} />
           )
         ) : null}
       </DragOverlay>
