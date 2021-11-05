@@ -66,19 +66,24 @@ export type TodoDict = {
   [id: string]: TodoTree;
 };
 
-export type TodoGroup = {
-  id: string;
-  name: string;
-};
-
-export type TodoGroupsTree = {
-  [id: string]: string[];
-};
-
 export const generateTodoTree = (todo: Omit<Todo, "id" | "orderIndex">) => {
   return {
     ...todo,
     id: uuidv4(),
     orderIndex: 0,
   };
+};
+
+// GROUP stuff
+
+export type TodoGroup = {
+  id: string;
+  name: string;
+};
+
+export type TodoGroupCreate = Pick<TodoGroup, "name">;
+export type TodoGroupEdit = Partial<Pick<TodoGroup, "name">>;
+
+export type TodoGroupsTree = {
+  [id: string]: string[];
 };

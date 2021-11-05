@@ -175,12 +175,12 @@ const ColTwo = ({ className }: { className: string }) => {
             <SpeedDialAction
               onClick={() => addTodo(id)}
               icon={<AddIcon />}
-              tooltipTitle={"Add Sub Todo"}
+              tooltipTitle={"Add Task"}
             />
             <SpeedDialAction
               onClick={() => deleteTodo(id)}
               icon={<DeleteIcon />}
-              tooltipTitle={"Delete This Todo"}
+              tooltipTitle={`Delete ${name}`}
             />
           </SpeedDial>
         )

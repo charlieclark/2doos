@@ -15,7 +15,14 @@ import {
   verticalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { Breadcrumbs, Card, Checkbox, Link, Paper } from "@mui/material";
+import {
+  Breadcrumbs,
+  Button,
+  Card,
+  Checkbox,
+  Link,
+  Paper,
+} from "@mui/material";
 import { TIMELINE_GROUPS } from "data/example";
 import { useGlobalDataContext } from "hooks/useGlobalData";
 import { get, partition } from "lodash";
@@ -39,6 +46,8 @@ import useCurrentTodo from "hooks/useCurrentTodo";
 import ColumnInner from "utils/components/ColumnInner";
 import styles from "./ColThree.module.scss";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import TextEditor from "utils/components/TextEditor";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export const TodoCellInner = ({
   id,
@@ -157,7 +166,8 @@ const TodoGroupHolder = ({
 }: {
   todoGroup: TodoGroup;
 }) => {
-  const { todoGroupsTree, todoDict } = useGlobalDataContext();
+  const { todoGroupsTree, todoDict, editTodoGroup, deleteTodoGroup } =
+    useGlobalDataContext();
 
   const items = todoGroupsTree[id]
     .filter((todoId) => {
@@ -186,17 +196,35 @@ const TodoGroupHolder = ({
 
   return (
     <Card className={styles.groupHolder}>
-      <div className={styles.groupTitle}>{name}</div>
+      <div className={styles.groupTitle}>
+        <TextEditor
+          value={name}
+          onChange={(newName) => editTodoGroup(id, { name: newName })}
+        />
+        <DeleteIcon onClick={() => deleteTodoGroup(id)} />
+      </div>
       {inner}
     </Card>
   );
 };
 
 const ColThree = ({ className }: { className: string }) => {
-  const { todoGroups } = useGlobalDataContext();
+  const { todoGroups, addTodoGroup } = useGlobalDataContext();
 
   return (
-    <ColumnInner className={className}>
+    <ColumnInner
+      className={className}
+      bottomContents={
+        <Button
+          variant="contained"
+          onClick={() => {
+            addTodoGroup({ name: "New Todo Group" });
+          }}
+        >
+          Add Todo Group
+        </Button>
+      }
+    >
       {Object.values(todoGroups).map((todoGroup) => (
         <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
       ))}

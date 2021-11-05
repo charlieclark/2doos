@@ -48,6 +48,6 @@ export const TEST_DATA: Todo[] = [
 export const TIMELINE_GROUPS = [
   {
     id: "tg-1",
-    name: "Due Next",
+    name: "Todo Next",
   },
 ];

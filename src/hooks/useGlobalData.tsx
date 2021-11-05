@@ -11,6 +11,8 @@ import {
   TodoGroup,
   TodoCreate,
   BOARD_ID,
+  TodoGroupEdit,
+  TodoGroupCreate,
 } from "types";
 import { createGenericContext } from "utils/createGenericContext";
 import { prepareData } from "utils/prepareData";
@@ -37,6 +39,10 @@ type UseGlobalData = {
     cb: (todo: Todo, index: number) => TodoEdit
   ) => void;
   deleteTodo: (id: string) => void;
+  addTodoGroup: (data: TodoGroupCreate) => void;
+  editTodoGroup: (id: string, changes: TodoGroupEdit) => void;
+  reorderTodoGroup: (id1: string, id2: string) => void;
+  deleteTodoGroup: (id: string) => void;
 };
 
 const [useGlobalDataContext, GlobalDataContextProvider] =
@@ -56,8 +62,9 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     ls.get("todos") || BASE_TODOS
   );
 
-  const [storedGroups, setStoredGroups] =
-    React.useState<TodoGroup[]>(TIMELINE_GROUPS);
+  const [storedGroups, setStoredGroups] = React.useState<TodoGroup[]>(
+    ls.get("todoGroups") || TIMELINE_GROUPS
+  );
 
   const { todoDict, todoTreeArray, todoGroups, todoGroupsTree } = prepareData(
     storedTodos,
@@ -129,7 +136,7 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     addToBottom?: boolean
   ) => {
     const newTodo = generateTodoTree({
-      name: "New Todo",
+      name: "New Task",
       notes: "",
       parentId,
       ...data,
@@ -185,6 +192,40 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
+  const addTodoGroup = (data: TodoGroupCreate) => {
+    setStoredGroups([...storedGroups, { id: uuidv4(), ...data }]);
+  };
+  const editTodoGroup = (id: string, changes: TodoGroupEdit) => {
+    setStoredGroups(
+      storedGroups.map((group) => {
+        if (group.id === id) {
+          return { ...group, ...changes };
+        }
+        return group;
+      })
+    );
+  };
+  const reorderTodoGroup = (id1: string, id2: string) => {
+    const index1 = storedGroups.findIndex((group) => group.id === id1);
+    const index2 = storedGroups.findIndex((group) => group.id === id2);
+
+    const newData = arrayMove(storedGroups, index1, index2);
+
+    setStoredGroups(newData);
+  };
+
+  const deleteTodoGroup = (id: string) => {
+    setStoredGroups(storedGroups.filter((group) => group.id !== id));
+    setStoredTodos(
+      storedTodos.map((todo) => {
+        if (todo.timelineGroup === id) {
+          return { ...todo, timelineGroup: undefined };
+        }
+        return todo;
+      })
+    );
+  };
+
   return (
     <GlobalDataContextProvider
       value={{
@@ -199,6 +240,10 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
         editTodo,
         editTodos,
         deleteTodo,
+        addTodoGroup,
+        editTodoGroup,
+        reorderTodoGroup,
+        deleteTodoGroup,
       }}
     >
       {children}
