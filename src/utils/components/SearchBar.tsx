@@ -70,7 +70,6 @@ export default function PrimarySearchAppBar() {
         value={activeSearch}
         onChange={(e) => setActiveSearch(e.currentTarget.value)}
         onFocus={() => setIsSearchFocused(true)}
-        onBlur={() => setIsSearchFocused(false)}
       />
     </Search>
   );

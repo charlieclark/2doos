@@ -123,7 +123,9 @@ export const TodoCellInner = ({
               }}
             />
           ) : (
-            <Icon className={styles.iconNonCheck} />
+            <div className={styles.iconNonCheck}>
+              <Icon />
+            </div>
           )}
         </div>
       </div>
@@ -280,6 +282,7 @@ const TodoGroupHolder = ({
 
 export const SearchScreen = ({ search }: { search?: string }) => {
   const { todoDict } = useGlobalDataContext();
+  const { clearActiveSearch, setIsSearchFocused } = useGlobalStateContext();
 
   const todosToShow = Object.values(todoDict).filter((todo) => {
     return !search || todo.name.toLowerCase().includes(search.toLowerCase());
@@ -288,6 +291,17 @@ export const SearchScreen = ({ search }: { search?: string }) => {
   return (
     <Box sx={{ pt: 5, overflow: "auto", height: "100%" }}>
       <Container>
+        <div className={styles.searchWrapper}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              clearActiveSearch();
+              setIsSearchFocused(false);
+            }}
+          >
+            Done Searching
+          </Button>
+        </div>
         {todosToShow.length === 0 ? (
           <Card>No results found</Card>
         ) : (

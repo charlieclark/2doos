@@ -118,4 +118,13 @@
 
 .iconNonCheck {
   width: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $majorGrid * 4;
 }
