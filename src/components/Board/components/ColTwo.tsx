@@ -25,6 +25,7 @@ import {
   todoTreeIsBoard,
   todoTreeIsFolder,
   todoTreeIsProject,
+  todoTreeIsTask,
 } from "utils/selectors";
 import { DragOverlay } from "@dnd-kit/core";
 import { useGlobalStateContext } from "hooks/useGlobalState";
@@ -43,15 +44,19 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import classNames from "classnames";
 import getIconForTodo from "utils/getIconForTodo";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import IndeterminateCheckBoxIcon from "@mui/icons-material/IndeterminateCheckBox";
 
 export const TodoCellInner = ({
   id,
   listeners,
   attributes,
+  isOver,
 }: {
   id: string;
   listeners?: any;
   attributes?: any;
+  isOver?: boolean;
 }) => {
   const { todoDict, editTodo, deleteTodo } = useGlobalDataContext();
   const todo = todoDict[id];
@@ -80,6 +85,7 @@ export const TodoCellInner = ({
       className={classNames(styles.todo, {
         [styles.isChecked]: isChecked,
         [styles.isDroppable]: isDroppable,
+        [styles.isOver]: isOver,
       })}
     >
       <div className={styles.left}>
@@ -122,7 +128,7 @@ export const TodoCellInner = ({
 };
 
 const TodoCell = ({ id }: { id: string }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, over } =
     useSortable({ id, data: { type: DD_TYPES.todoProject, id } });
 
   const style = {
@@ -132,7 +138,12 @@ const TodoCell = ({ id }: { id: string }) => {
 
   return (
     <div ref={setNodeRef} style={style}>
-      <TodoCellInner id={id} listeners={listeners} attributes={attributes} />
+      <TodoCellInner
+        id={id}
+        listeners={listeners}
+        attributes={attributes}
+        isOver={!!over && over.id === id}
+      />
     </div>
   );
 };
@@ -165,6 +176,13 @@ const ColTwo = ({ className }: { className: string }) => {
   return (
     <ColumnInner
       className={className}
+      bottomContents={
+        !todoTreeIsBoard(todoTree) && (
+          <Button variant="outlined" onClick={() => addTodo(id)}>
+            Add Task
+          </Button>
+        )
+      }
       outerContents={
         !todoTreeIsBoard(todoTree) && (
           <SpeedDial
@@ -173,15 +191,32 @@ const ColTwo = ({ className }: { className: string }) => {
             icon={<MoreHorizIcon />}
           >
             <SpeedDialAction
-              onClick={() => addTodo(id)}
-              icon={<AddIcon />}
-              tooltipTitle={"Add Task"}
-            />
-            <SpeedDialAction
               onClick={() => deleteTodo(id)}
               icon={<DeleteIcon />}
               tooltipTitle={`Delete ${name}`}
             />
+            {todoTreeIsTask(todoTree) && todoTreeIsUnfinishedTask(todoTree) && (
+              <SpeedDialAction
+                onClick={() =>
+                  editTodo(id, {
+                    status: "done",
+                  })
+                }
+                icon={<CheckBoxIcon />}
+                tooltipTitle={`Mark ${name} as Complete`}
+              />
+            )}
+            {todoTreeIsTask(todoTree) && !todoTreeIsUnfinishedTask(todoTree) && (
+              <SpeedDialAction
+                onClick={() =>
+                  editTodo(id, {
+                    status: undefined,
+                  })
+                }
+                icon={<IndeterminateCheckBoxIcon />}
+                tooltipTitle={`Mark ${name} as Incomplete`}
+              />
+            )}
           </SpeedDial>
         )
       }
@@ -198,11 +233,21 @@ const ColTwo = ({ className }: { className: string }) => {
         value={notes}
         onChange={(newNotes) => editTodo(id, { notes: newNotes })}
       />
-      <Divider className={styles.divider} variant="middle" />
-      <TodoStack id={TodoTypes.folder} todos={folders} />
-      <Divider className={styles.divider} variant="middle" />
-      <TodoStack id={`${TodoTypes.todo}-notDone`} todos={notDone} />
-      <TodoStack id={`${TodoTypes.todo}-done`} todos={done} />
+
+      {folders.length > 0 && (
+        <>
+          <Divider className={styles.divider} variant="middle" />
+          <TodoStack id={TodoTypes.folder} todos={folders} />
+        </>
+      )}
+
+      {done.length + notDone.length > 0 && (
+        <>
+          <Divider className={styles.divider} variant="middle" />
+          <TodoStack id={`${TodoTypes.todo}-notDone`} todos={notDone} />
+          <TodoStack id={`${TodoTypes.todo}-done`} todos={done} />
+        </>
+      )}
     </ColumnInner>
   );
 };

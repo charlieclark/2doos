@@ -20,6 +20,8 @@ import {
   Button,
   Card,
   Checkbox,
+  Chip,
+  Container,
   Link,
   Paper,
 } from "@mui/material";
@@ -33,6 +35,7 @@ import {
   removePrefix,
   TG_ALL,
   TodoGroup,
+  getDragEventData,
 } from "types";
 import {
   todoTreeIsUnfinishedTask,
@@ -40,7 +43,7 @@ import {
   todoTreeIsTask,
 } from "utils/selectors";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useGlobalStateContext } from "hooks/useGlobalState";
 import useCurrentTodo from "hooks/useCurrentTodo";
 import ColumnInner from "utils/components/ColumnInner";
@@ -48,17 +51,26 @@ import styles from "./ColThree.module.scss";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import TextEditor from "utils/components/TextEditor";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
+import classNames from "classnames";
+import { Box } from "@mui/system";
 
 export const TodoCellInner = ({
   id,
   listeners,
+  isDragOverlay,
 }: {
   id: string;
   listeners?: any;
+  isDragOverlay?: boolean;
 }) => {
   const { todoDict, editTodo } = useGlobalDataContext();
   const { updateCurrentTodo } = useCurrentTodo();
   const todo = todoDict[id];
+
   return (
     <Card
       className={styles.card}
@@ -68,7 +80,7 @@ export const TodoCellInner = ({
     >
       <div className={styles.breadCrumbs}>
         {[...todo.parents].reverse().map((todoParent) => (
-          <>
+          <Fragment key={todoParent}>
             <div className={styles.carrat}>›</div>
             <div
               className={styles.link}
@@ -79,20 +91,27 @@ export const TodoCellInner = ({
             >
               {todoDict[todoParent].name}
             </div>
-          </>
+          </Fragment>
         ))}
       </div>
       <div className={styles.middle}>
-        <div className={styles.iconWrapper} {...listeners}>
+        <div
+          style={{ cursor: "move" }}
+          className={styles.iconWrapper}
+          {...listeners}
+        >
           <DragIndicatorIcon />
         </div>
 
         <div className={styles.name}>{todo.name}</div>
         <div className={styles.iconWrapper}>
           <Checkbox
+            checked={todo.status === "done"}
             onClick={(e) => {
               e.stopPropagation();
-              editTodo(id, { status: "done" });
+              editTodo(id, {
+                status: todo.status === "done" ? undefined : "done",
+              });
             }}
           />
         </div>
@@ -138,7 +157,9 @@ const TodoGroupHolderInner = ({
     activeDrag.type === DD_TYPES.todoTimeline &&
     todoGroupsTree[id].includes(activeDrag.id);
 
-  const { setNodeRef } = useDroppable({
+  const isDroppable = activeDrag && !isDroppableDisabled;
+
+  const { setNodeRef, isOver, over } = useDroppable({
     id: appendPrefix(id, DD_TYPES.todoTimelineGroup),
     disabled: isDroppableDisabled,
 
@@ -148,8 +169,19 @@ const TodoGroupHolderInner = ({
     },
   });
 
+  const isReallyOver =
+    isOver || (over && getDragEventData(over).containerId === id);
+
+  console.log(over);
+
   return (
-    <div ref={setNodeRef}>
+    <div
+      ref={setNodeRef}
+      className={classNames(styles.holderInnerWrapper, {
+        [styles.isOver]: isReallyOver,
+        [styles.isDroppable]: isDroppable,
+      })}
+    >
       {items.length ? (
         items.map((todoId) => <TodoCell key={todoId} id={todoId} />)
       ) : (
@@ -166,8 +198,13 @@ const TodoGroupHolder = ({
 }: {
   todoGroup: TodoGroup;
 }) => {
-  const { todoGroupsTree, todoDict, editTodoGroup, deleteTodoGroup } =
-    useGlobalDataContext();
+  const {
+    todoGroupsTree,
+    todoDict,
+    editTodoGroup,
+    deleteTodoGroup,
+    reorderTodoGroup,
+  } = useGlobalDataContext();
 
   const items = todoGroupsTree[id]
     .filter((todoId) => {
@@ -191,36 +228,83 @@ const TodoGroupHolder = ({
   );
 
   if (id === TG_ALL) {
-    return inner;
+    return (
+      <Card className={styles.groupHolder}>
+        <div className={styles.groupTitle}>Backlog</div>
+        {inner}
+      </Card>
+    );
   }
 
   return (
     <Card className={styles.groupHolder}>
       <div className={styles.groupTitle}>
         <TextEditor
+          className={styles.title}
           value={name}
           onChange={(newName) => editTodoGroup(id, { name: newName })}
         />
-        <DeleteIcon onClick={() => deleteTodoGroup(id)} />
+        <div className={styles.right}>
+          <div className={styles.delete} onClick={() => deleteTodoGroup(id)}>
+            <DeleteIcon fontSize="small" />
+          </div>
+          <div className={styles.sortArrows}>
+            <ArrowDropUpIcon
+              className={styles.sortArrow}
+              onClick={() => {
+                reorderTodoGroup(id, "up");
+              }}
+            />
+            <ArrowDropDownIcon
+              className={styles.sortArrow}
+              onClick={() => {
+                reorderTodoGroup(id, "down");
+              }}
+            />
+          </div>
+        </div>
       </div>
       {inner}
     </Card>
   );
 };
 
+export const SearchScreen = ({ search }: { search?: string }) => {
+  const { todoDict } = useGlobalDataContext();
+
+  const todosToShow = Object.values(todoDict).filter((todo) => {
+    return !search || todo.name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  return (
+    <Box sx={{ pt: 5, overflow: "auto", height: "100%" }}>
+      <Container>
+        {todosToShow.length === 0 ? (
+          <Card>No results found</Card>
+        ) : (
+          todosToShow.map((todo) => (
+            <TodoCellInner key={todo.id} id={todo.id} />
+          ))
+        )}
+      </Container>
+    </Box>
+  );
+};
+
 const ColThree = ({ className }: { className: string }) => {
   const { todoGroups, addTodoGroup } = useGlobalDataContext();
+  const { isShowingKanban } = useGlobalStateContext();
 
-  const reorderableGroups = Object.values(todoGroups).filter(
-    (group) => group.id !== TG_ALL
-  );
+  const useGroups = isShowingKanban
+    ? Object.values(todoGroups).reverse()
+    : Object.values(todoGroups);
 
   return (
     <ColumnInner
       className={className}
       bottomContents={
         <Button
-          variant="contained"
+          variant="outlined"
           onClick={() => {
             addTodoGroup({ name: "New Todo Group" });
           }}
@@ -229,21 +313,17 @@ const ColThree = ({ className }: { className: string }) => {
         </Button>
       }
     >
-      <SortableContext
-        id={"todo-groups-reorder"}
-        items={reorderableGroups}
-        strategy={verticalListSortingStrategy}
+      <div
+        className={classNames(styles.container, {
+          [styles.isShowingKanban]: isShowingKanban,
+        })}
       >
-        {reorderableGroups.map((todoGroup) => (
-          <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
+        {useGroups.map((todoGroup) => (
+          <div className={styles.groupHolderWrapper}>
+            <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
+          </div>
         ))}
-      </SortableContext>
-
-      {Object.values(todoGroups)
-        .filter((group) => group.id === TG_ALL)
-        .map((todoGroup) => (
-          <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
-        ))}
+      </div>
     </ColumnInner>
   );
 };

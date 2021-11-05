@@ -9,25 +9,7 @@
   cursor: pointer;
   padding: $majorGrid * 0.25;
 
-  &.isDroppable {
-    &::after {
-      content: "";
-      display: block;
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      bottom: -5px;
-      left: -5px;
-      background: rgba(teal, 0.1);
-      border-radius: 5px;
-      z-index: 10;
-    }
-    &.isOver {
-      &::after {
-        background: rgba(teal, 0.5);
-      }
-    }
-  }
+  @include dropState;
 
   .left {
     display: flex;
@@ -35,8 +17,20 @@
   }
   .name {
     margin-left: $majorGrid * 1;
+
     &.isActive {
-      text-decoration: underline;
+      &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        bottom: -5px;
+        left: -5px;
+        background: rgba(black, 0.07);
+        border-radius: 5px;
+        z-index: 10;
+      }
     }
 
     &.isProject {

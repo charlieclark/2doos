@@ -20,18 +20,7 @@
   height: 55px;
   position: relative;
 
-  &.isDroppable {
-    &::after {
-      content: "";
-      display: block;
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background: rgba(teal, 0.1);
-    }
-  }
+  @include dropState;
 
   &.isChecked {
     opacity: 0.5;
@@ -68,6 +57,7 @@
   .drag {
     display: flex;
     align-items: center;
+    cursor: move;
   }
 
   .arrow {

@@ -6,6 +6,13 @@ type UseGlobalState = {
   activeDrag?: ActiveDrag;
   setActiveDrag: (...args: Parameters<typeof getDragEventData>) => void;
   clearActiveDrag: () => void;
+  activeSearch?: string;
+  isSearchFocused?: boolean;
+  isShowingKanban?: boolean;
+  setIsSearchFocused: (isFocused: boolean) => void;
+  setActiveSearch: (search: string) => void;
+  clearActiveSearch: () => void;
+  setIsShowingKanban: (show: boolean) => void;
 };
 
 const [useGlobalStateContext, GlobalStateContextProvider] =
@@ -13,6 +20,9 @@ const [useGlobalStateContext, GlobalStateContextProvider] =
 
 const GlobalStateProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeDrag, setActiveDrag] = React.useState<ActiveDrag>();
+  const [activeSearch, setActiveSearch] = React.useState<string>();
+  const [isSearchFocused, setIsSearchFocused] = React.useState<boolean>();
+  const [isShowingKanban, setIsShowingKanban] = React.useState<boolean>();
 
   return (
     <GlobalStateContextProvider
@@ -20,6 +30,13 @@ const GlobalStateProvider = ({ children }: { children: React.ReactNode }) => {
         activeDrag,
         setActiveDrag: (data) => setActiveDrag(getDragEventData(data)),
         clearActiveDrag: () => setActiveDrag(undefined),
+        activeSearch,
+        setActiveSearch,
+        clearActiveSearch: () => setActiveSearch(""),
+        isSearchFocused,
+        setIsSearchFocused,
+        isShowingKanban,
+        setIsShowingKanban,
       }}
     >
       {children}

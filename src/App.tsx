@@ -6,9 +6,15 @@ import {
 } from "react-router-dom";
 import Board from "components/Board";
 import { GlobalDataProvider, useGlobalDataContext } from "hooks/useGlobalData";
-import { GlobalStateProvider } from "hooks/useGlobalState";
+import {
+  GlobalStateProvider,
+  useGlobalStateContext,
+} from "hooks/useGlobalState";
 import styles from "./App.module.scss";
-import { AppBar, Toolbar, Typography } from "@mui/material";
+import { AppBar, IconButton, Toolbar, Typography } from "@mui/material";
+import PrimarySearchAppBar from "utils/components/SearchBar";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 
 const EmptyState = () => {
   const { todoTreeArray, addTodo } = useGlobalDataContext();
@@ -30,12 +36,27 @@ const EmptyState = () => {
 };
 
 const Nav = () => {
+  const { isShowingKanban, setIsShowingKanban } = useGlobalStateContext();
   return (
     <AppBar position="static" className={styles.nav}>
-      <Toolbar variant="dense">
-        <Typography variant="h6" color="inherit" component="div">
+      <Toolbar>
+        <Typography
+          variant="h6"
+          color="inherit"
+          component="div"
+          sx={{ flexGrow: 1 }}
+        >
           2doos
         </Typography>
+        <PrimarySearchAppBar />
+        <IconButton
+          color="inherit"
+          onClick={() => {
+            setIsShowingKanban(!isShowingKanban);
+          }}
+        >
+          {isShowingKanban ? <TableChartOutlinedIcon /> : <TableChartIcon />}
+        </IconButton>
       </Toolbar>
     </AppBar>
   );

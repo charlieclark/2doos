@@ -19,6 +19,7 @@ import { prepareData } from "utils/prepareData";
 import { arrayMove } from "@dnd-kit/sortable";
 import { getAllChildren } from "utils/selectors";
 import { v4 as uuidv4 } from "uuid";
+import { useGlobalStateContext } from "./useGlobalState";
 
 type UseGlobalData = {
   todoDict: TodoDict;
@@ -41,7 +42,7 @@ type UseGlobalData = {
   deleteTodo: (id: string) => void;
   addTodoGroup: (data: TodoGroupCreate) => void;
   editTodoGroup: (id: string, changes: TodoGroupEdit) => void;
-  reorderTodoGroup: (id1: string, id2: string) => void;
+  reorderTodoGroup: (id: string, direction: "up" | "down") => void;
   deleteTodoGroup: (id: string) => void;
 };
 
@@ -210,9 +211,9 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
       })
     );
   };
-  const reorderTodoGroup = (id1: string, id2: string) => {
-    const index1 = storedGroups.findIndex((group) => group.id === id1);
-    const index2 = storedGroups.findIndex((group) => group.id === id2);
+  const reorderTodoGroup = (id: string, direction: "up" | "down") => {
+    const index1 = storedGroups.findIndex((group) => group.id === id);
+    const index2 = index1 + (direction === "up" ? -1 : 1);
 
     const newData = arrayMove(storedGroups, index1, index2);
 

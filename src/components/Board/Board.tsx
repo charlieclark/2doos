@@ -6,6 +6,7 @@ import ColTwo, {
   TodoCellInner as TodoCellInnerColTwo,
 } from "./components/ColTwo";
 import ColThree, {
+  SearchScreen,
   TodoCellInner as TodoCellInnerColThree,
 } from "./components/ColThree";
 import {
@@ -38,6 +39,7 @@ import {
 import useCurrentTodo from "hooks/useCurrentTodo";
 import { getAllLeafIds } from "utils/selectors";
 import ColumnInner from "utils/components/ColumnInner";
+import classNames from "classnames";
 
 const Projects = () => {
   const sensors = useSensors(
@@ -48,7 +50,7 @@ const Projects = () => {
   );
 
   const { todoId: currentTodoId } = useCurrentTodo();
-  const { setActiveDrag, clearActiveDrag, activeDrag } =
+  const { setActiveDrag, clearActiveDrag, activeDrag, isShowingKanban } =
     useGlobalStateContext();
   const {
     todoGroupsTree,
@@ -77,7 +79,7 @@ const Projects = () => {
   return (
     <DndContext
       sensors={sensors}
-      // collisionDetection={closestCorners}
+      collisionDetection={closestCorners}
       onDragStart={(event) => {
         setActiveDrag(event.active);
       }}
@@ -155,9 +157,15 @@ const Projects = () => {
         }
       }}
     >
-      <ColOne className={styles.row1} />
-      <ColTwo className={styles.row2} key={currentTodoId} />
-      <ColThree className={styles.row3} />
+      {!isShowingKanban && <ColOne className={styles.row1} />}
+      {!isShowingKanban && (
+        <ColTwo className={styles.row2} key={currentTodoId} />
+      )}
+      <ColThree
+        className={classNames(styles.row3, {
+          [styles.isShowingKanban]: isShowingKanban,
+        })}
+      />
       <DragOverlay dropAnimation={null}>
         {activeDrag ? (
           activeDrag.type === DD_TYPES.project ? (
@@ -165,7 +173,7 @@ const Projects = () => {
           ) : activeDrag.type === DD_TYPES.todoProject ? (
             <TodoCellInnerColTwo id={activeDrag.id} />
           ) : (
-            <TodoCellInnerColThree id={activeDrag.id} />
+            <TodoCellInnerColThree isDragOverlay id={activeDrag.id} />
           )
         ) : null}
       </DragOverlay>
@@ -175,9 +183,16 @@ const Projects = () => {
 
 const Board = () => {
   const { todoTree } = useCurrentTodo();
+  const { activeSearch, isSearchFocused } = useGlobalStateContext();
+
   if (!todoTree) {
     return <Redirect to="/" />;
   }
+
+  if (activeSearch || isSearchFocused) {
+    return <SearchScreen search={activeSearch} />;
+  }
+
   return (
     <div className={styles.container}>
       <Projects />

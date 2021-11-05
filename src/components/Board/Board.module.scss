@@ -22,4 +22,8 @@
 .row3 {
   width: percentage(1.5/4);
   background: $colorCol1Bg;
+
+  &.isShowingKanban {
+    width: 100%;
+  }
 }

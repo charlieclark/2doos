@@ -10,6 +10,7 @@
     "@emotion/styled": "latest",
     "@mui/icons-material": "^5.0.5",
     "@mui/material": "latest",
+    "@react-hook/throttle": "^2.2.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/react-router-dom": "^5.3.2",

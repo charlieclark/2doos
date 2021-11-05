@@ -44,7 +44,7 @@ const Folder = ({
 }) => {
   const { id, name, children, allChildren } = todoTree;
   const { todoId, updateCurrentTodo } = useCurrentTodo();
-  const isActive = doesTodoContainTodo(todoTree, todoId);
+  const isActive = todoId === id;
   const { activeDrag } = useGlobalStateContext();
   const { todoDict } = useGlobalDataContext();
 
@@ -81,13 +81,13 @@ const Folder = ({
 
   return (
     <>
-      <div style={{ paddingLeft: indentation * 20 }}>
+      <div ref={setNodeRef} style={{ paddingLeft: indentation * 20 }}>
         <div
           className={classNames(styles.folderItem, {
             [styles.isDroppable]: isDroppable,
             [styles.isOver]: isOver,
           })}
-          ref={setNodeRef}
+          // ref={setNodeRef}
           onClick={(e) => {
             e.stopPropagation();
             updateCurrentTodo(id);
@@ -154,7 +154,7 @@ const ColOne = ({ className }: { className: string }) => {
       className={className}
       bottomContents={
         <Button
-          variant="contained"
+          variant="outlined"
           onClick={() => {
             addTodo(BOARD_ID, { name: "New Project" }, true);
           }}
