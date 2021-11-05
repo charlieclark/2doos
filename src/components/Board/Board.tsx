@@ -39,7 +39,6 @@ import useCurrentTodo from "hooks/useCurrentTodo";
 import { getAllLeafIds } from "utils/selectors";
 import ColumnInner from "utils/components/ColumnInner";
 
-
 const Projects = () => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -64,10 +63,15 @@ const Projects = () => {
   const moveTodoGroup = (todoId: string, groupId: string) => {
     const leafIds = getAllLeafIds(todoDict[todoId]);
 
-    editTodos(leafIds, (todo, index) => ({
-      timelineGroup: groupId === TG_ALL ? undefined : groupId,
-      orderIndex: todoGroupsTree[groupId].length + index,
-    }));
+    editTodos(leafIds, (todo, index) => {
+      if (groupId !== TG_ALL && !todoGroupsTree[groupId]) {
+        return todo;
+      }
+      return {
+        timelineGroup: groupId === TG_ALL ? undefined : groupId,
+        orderIndex: todoGroupsTree[groupId].length + index,
+      };
+    });
   };
 
   return (

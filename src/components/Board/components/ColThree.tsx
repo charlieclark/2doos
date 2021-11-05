@@ -211,6 +211,10 @@ const TodoGroupHolder = ({
 const ColThree = ({ className }: { className: string }) => {
   const { todoGroups, addTodoGroup } = useGlobalDataContext();
 
+  const reorderableGroups = Object.values(todoGroups).filter(
+    (group) => group.id !== TG_ALL
+  );
+
   return (
     <ColumnInner
       className={className}
@@ -225,9 +229,21 @@ const ColThree = ({ className }: { className: string }) => {
         </Button>
       }
     >
-      {Object.values(todoGroups).map((todoGroup) => (
-        <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
-      ))}
+      <SortableContext
+        id={"todo-groups-reorder"}
+        items={reorderableGroups}
+        strategy={verticalListSortingStrategy}
+      >
+        {reorderableGroups.map((todoGroup) => (
+          <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
+        ))}
+      </SortableContext>
+
+      {Object.values(todoGroups)
+        .filter((group) => group.id === TG_ALL)
+        .map((todoGroup) => (
+          <TodoGroupHolder key={todoGroup.id} todoGroup={todoGroup} />
+        ))}
     </ColumnInner>
   );
 };

@@ -9,6 +9,7 @@ export enum DD_TYPES {
   todoProject = "todoProject",
   todoTimeline = "todoTimeline",
   todoTimelineGroup = "todoTimelineGroup",
+  todoTimelineGroupReorder = "todoTimelineGroupReorder",
 }
 
 export type ActiveDrag = {

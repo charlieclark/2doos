@@ -62,7 +62,7 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
     ls.get("todos") || BASE_TODOS
   );
 
-  const [storedGroups, setStoredGroups] = React.useState<TodoGroup[]>(
+  const [storedGroups, setStoredGroupsRaw] = React.useState<TodoGroup[]>(
     ls.get("todoGroups") || TIMELINE_GROUPS
   );
 
@@ -74,6 +74,11 @@ const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
   const setStoredTodos = (todos: Todo[]) => {
     setStoredTodosRaw(todos);
     ls.set("todos", todos);
+  };
+
+  const setStoredGroups = (todoGroups: TodoGroup[]) => {
+    setStoredGroupsRaw(todoGroups);
+    ls.set("todoGroups", todoGroups);
   };
 
   const reorderTodos = (id1: string, id2: string) => {
