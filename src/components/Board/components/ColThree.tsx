@@ -27,7 +27,11 @@ import {
   TG_ALL,
   TodoGroup,
 } from "types";
-import { todoTreeIsFolder } from "utils/selectors";
+import {
+  todoTreeIsUnfinishedTask,
+  todoTreeIsFolder,
+  todoTreeIsTask,
+} from "utils/selectors";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { useGlobalStateContext } from "hooks/useGlobalState";
@@ -156,7 +160,12 @@ const TodoGroupHolder = ({
   const { todoGroupsTree, todoDict } = useGlobalDataContext();
 
   const items = todoGroupsTree[id]
-    .filter((todoId) => todoDict[todoId].status !== "done")
+    .filter((todoId) => {
+      return (
+        todoTreeIsTask(todoDict[todoId]) &&
+        todoTreeIsUnfinishedTask(todoDict[todoId])
+      );
+    })
     .map((todoId) => appendPrefix(todoId, DD_TYPES.todoTimeline));
 
   const inner = (

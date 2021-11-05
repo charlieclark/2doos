@@ -21,7 +21,7 @@ import { useGlobalDataContext } from "hooks/useGlobalData";
 import { partition } from "lodash";
 import { DD_TYPES, TodoTree, TodoTypes } from "types";
 import {
-  isUnfinishedTask,
+  todoTreeIsUnfinishedTask,
   todoTreeIsBoard,
   todoTreeIsFolder,
   todoTreeIsProject,
@@ -70,7 +70,7 @@ export const TodoCellInner = ({
   const isChecked = children.length === 0 && status === "done";
 
   const unfinishedCount = allChildren.filter((id) =>
-    isUnfinishedTask(todoDict[id])
+    todoTreeIsUnfinishedTask(todoDict[id])
   ).length;
 
   const Icon = getIconForTodo(todo);

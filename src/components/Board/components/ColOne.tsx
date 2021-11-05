@@ -9,7 +9,7 @@ import { useGlobalDataContext } from "hooks/useGlobalData";
 import { BOARD_ID, DD_TYPES, TodoTree } from "types";
 import {
   doesTodoContainTodo,
-  isUnfinishedTask,
+  todoTreeIsUnfinishedTask,
   todoTreeIsFolder,
   todoTreeIsProject,
 } from "utils/selectors";
@@ -66,14 +66,14 @@ const Folder = ({
   const isBoard = indentation === 0;
 
   const unfinishedCountAll = allChildren.filter((id) =>
-    isUnfinishedTask(todoDict[id])
+    todoTreeIsUnfinishedTask(todoDict[id])
   ).length;
 
   const unfinishedCount = children.filter(({ id }) =>
-    isUnfinishedTask(todoDict[id])
+    todoTreeIsUnfinishedTask(todoDict[id])
   ).length;
 
-  const isTask = isUnfinishedTask(todoDict[id]);
+  const isTask = todoTreeIsUnfinishedTask(todoDict[id]);
 
   const useCount = isBoard ? unfinishedCountAll : unfinishedCount;
 
@@ -118,7 +118,7 @@ const Folder = ({
           (todo) =>
             todoTreeIsFolder(todo) ||
             todoTreeIsProject(todo) ||
-            isUnfinishedTask(todo)
+            todoTreeIsUnfinishedTask(todo)
         );
         return (
           !isDraggingProject &&

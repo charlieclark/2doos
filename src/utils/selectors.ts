@@ -20,11 +20,12 @@ export const todoTreeIsProject = (todoTree: TodoTree) =>
 export const todoTreeIsFolder = (todoTree: TodoTree) =>
   !!todoTree.children.length || !todoTree.parentId;
 
-export const isUnfinishedTask = (todoTree: TodoTree) => {
-  return (
-    !(todoTreeIsFolder(todoTree) || todoTreeIsProject(todoTree)) &&
-    todoTree.status !== "done"
-  );
+export const todoTreeIsTask = (todoTree: TodoTree) => {
+  return !(todoTreeIsFolder(todoTree) || todoTreeIsProject(todoTree));
+};
+
+export const todoTreeIsUnfinishedTask = (todoTree: TodoTree) => {
+  return todoTreeIsTask(todoTree) && todoTree.status !== "done";
 };
 
 export const getAllLeafIds = (todoTree: TodoTree) => {
