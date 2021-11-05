@@ -19,7 +19,6 @@ $border1: solid 1px rgba(black, 0.08);
       left: -5px;
       background: rgba(teal, 0.1);
       border-radius: 5px;
-      z-index: 10;
     }
     &.isOver {
       &::after {

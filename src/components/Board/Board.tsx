@@ -97,10 +97,8 @@ const Projects = () => {
           if (activeData.containerId === overData.containerId) {
             return;
           } else if (overData.containerId) {
-            console.log("move ovr container inner", overData.containerId);
             moveTodoGroup(activeData.id, overData.containerId);
           } else if (activeData.containerId !== overData.id) {
-            console.log("move ovr container", overData.id);
             moveTodoGroup(activeData.id, overData.id);
           }
         }

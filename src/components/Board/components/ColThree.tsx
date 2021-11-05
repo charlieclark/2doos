@@ -172,8 +172,6 @@ const TodoGroupHolderInner = ({
   const isReallyOver =
     isOver || (over && getDragEventData(over).containerId === id);
 
-  console.log(over);
-
   return (
     <div
       ref={setNodeRef}
