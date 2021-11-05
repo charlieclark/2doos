@@ -20,7 +20,12 @@ import useCurrentTodo from "hooks/useCurrentTodo";
 import { useGlobalDataContext } from "hooks/useGlobalData";
 import { partition } from "lodash";
 import { DD_TYPES, TodoTree, TodoTypes } from "types";
-import { isUnfinishedTask, todoTreeIsFolder } from "utils/selectors";
+import {
+  isUnfinishedTask,
+  todoTreeIsBoard,
+  todoTreeIsFolder,
+  todoTreeIsProject,
+} from "utils/selectors";
 import { DragOverlay } from "@dnd-kit/core";
 import { useGlobalStateContext } from "hooks/useGlobalState";
 import { CSS } from "@dnd-kit/utilities";
@@ -37,11 +42,12 @@ import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import classNames from "classnames";
+import getIconForTodo from "utils/getIconForTodo";
 
 export const TodoCellInner = ({
   id,
   listeners,
-  attributes
+  attributes,
 }: {
   id: string;
   listeners?: any;
@@ -67,6 +73,8 @@ export const TodoCellInner = ({
     isUnfinishedTask(todoDict[id])
   ).length;
 
+  const Icon = getIconForTodo(todo);
+
   return (
     <Card
       className={classNames(styles.todo, {
@@ -79,7 +87,7 @@ export const TodoCellInner = ({
           <DragIndicatorIcon />
         </div>
         <div className={styles.iconWrapper}>
-          {!todoTreeIsFolder(todo) ? (
+          {!(todoTreeIsFolder(todo) || todoTreeIsProject(todo)) ? (
             <Checkbox
               checked={status === "done"}
               onClick={(e) => {
@@ -95,7 +103,7 @@ export const TodoCellInner = ({
               color={"warning"}
               badgeContent={unfinishedCount}
             >
-              <FolderOpenIcon className={styles.folderIcon} />
+              <Icon className={styles.folderIcon} />
             </Badge>
           )}
         </div>
@@ -146,33 +154,36 @@ const TodoStack = ({ todos, id }: { todos: TodoTree[]; id: string }) => {
 };
 
 const ColTwo = ({ className }: { className: string }) => {
-  const {
-    todoTree: { name, children, id, notes },
-  } = useCurrentTodo();
+  const { todoTree } = useCurrentTodo();
+  const { name, children, id, notes } = todoTree;
   const { addTodo, editTodo, deleteTodo } = useGlobalDataContext();
-  const [folders, todos] = partition(children, todoTreeIsFolder);
+  const [folders, todos] = partition(children, (todoTree) => {
+    return todoTreeIsFolder(todoTree) || todoTreeIsProject(todoTree);
+  });
   const [done, notDone] = partition(todos, (a) => a.status === "done");
 
   return (
     <ColumnInner
       className={className}
       outerContents={
-        <SpeedDial
-          ariaLabel="SpeedDial basic example"
-          sx={{ position: "absolute", bottom: 16, right: 16 }}
-          icon={<MoreHorizIcon />}
-        >
-          <SpeedDialAction
-            onClick={() => addTodo(id)}
-            icon={<AddIcon />}
-            tooltipTitle={"Add Sub Todo"}
-          />
-          <SpeedDialAction
-            onClick={() => deleteTodo(id)}
-            icon={<DeleteIcon />}
-            tooltipTitle={"Delete This Todo"}
-          />
-        </SpeedDial>
+        !todoTreeIsBoard(todoTree) && (
+          <SpeedDial
+            ariaLabel="SpeedDial basic example"
+            sx={{ position: "absolute", bottom: 16, right: 16 }}
+            icon={<MoreHorizIcon />}
+          >
+            <SpeedDialAction
+              onClick={() => addTodo(id)}
+              icon={<AddIcon />}
+              tooltipTitle={"Add Sub Todo"}
+            />
+            <SpeedDialAction
+              onClick={() => deleteTodo(id)}
+              icon={<DeleteIcon />}
+              tooltipTitle={"Delete This Todo"}
+            />
+          </SpeedDial>
+        )
       }
     >
       <div className={styles.header}>

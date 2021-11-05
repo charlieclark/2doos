@@ -1,6 +1,7 @@
 import { get } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 
+export const BOARD_ID = "board";
 export const TG_ALL = "tg-all";
 
 export enum DD_TYPES {

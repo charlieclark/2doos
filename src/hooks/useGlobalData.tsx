@@ -10,11 +10,13 @@ import {
   TodoGroupsTree,
   TodoGroup,
   TodoCreate,
+  BOARD_ID,
 } from "types";
 import { createGenericContext } from "utils/createGenericContext";
 import { prepareData } from "utils/prepareData";
 import { arrayMove } from "@dnd-kit/sortable";
 import { getAllChildren } from "utils/selectors";
+import { v4 as uuidv4 } from "uuid";
 
 type UseGlobalData = {
   todoDict: TodoDict;
@@ -40,9 +42,18 @@ type UseGlobalData = {
 const [useGlobalDataContext, GlobalDataContextProvider] =
   createGenericContext<UseGlobalData>();
 
+const BASE_TODOS: Todo[] = [
+  {
+    name: "My Board",
+    id: BOARD_ID,
+    notes: "",
+    orderIndex: 0,
+  },
+];
+
 const GlobalDataProvider = ({ children }: { children: React.ReactNode }) => {
   const [storedTodos, setStoredTodosRaw] = React.useState<Todo[]>(
-    ls.get("todos") || []
+    ls.get("todos") || BASE_TODOS
   );
 
   const [storedGroups, setStoredGroups] =

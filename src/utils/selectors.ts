@@ -1,4 +1,4 @@
-import { TodoDict, TodoTree } from "types";
+import { BOARD_ID, TodoDict, TodoTree } from "types";
 
 export const doesTodoContainTodo = (
   todoTree: TodoTree,
@@ -10,11 +10,21 @@ export const doesTodoContainTodo = (
   );
 };
 
+export const todoTreeIsBoard = (todoTree: TodoTree) => todoTree.id === BOARD_ID;
+export const todoTreeParentIsBoard = (todoTree: TodoTree) =>
+  todoTree.parentId === BOARD_ID;
+
+export const todoTreeIsProject = (todoTree: TodoTree) =>
+  todoTreeParentIsBoard(todoTree);
+
 export const todoTreeIsFolder = (todoTree: TodoTree) =>
   !!todoTree.children.length || !todoTree.parentId;
 
 export const isUnfinishedTask = (todoTree: TodoTree) => {
-  return !todoTreeIsFolder(todoTree) && todoTree.status !== "done";
+  return (
+    !(todoTreeIsFolder(todoTree) || todoTreeIsProject(todoTree)) &&
+    todoTree.status !== "done"
+  );
 };
 
 export const getAllLeafIds = (todoTree: TodoTree) => {

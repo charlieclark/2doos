@@ -6,11 +6,12 @@ import {
 } from "@dnd-kit/sortable";
 import useCurrentTodo from "hooks/useCurrentTodo";
 import { useGlobalDataContext } from "hooks/useGlobalData";
-import { DD_TYPES, TodoTree } from "types";
+import { BOARD_ID, DD_TYPES, TodoTree } from "types";
 import {
   doesTodoContainTodo,
   isUnfinishedTask,
   todoTreeIsFolder,
+  todoTreeIsProject,
 } from "utils/selectors";
 import { CSS } from "@dnd-kit/utilities";
 import { useGlobalStateContext } from "hooks/useGlobalState";
@@ -31,6 +32,8 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import styles from "./ColOne.module.scss";
 import classNames from "classnames";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import getIconForTodo from "utils/getIconForTodo";
 
 const Folder = ({
   todoTree,
@@ -49,7 +52,8 @@ const Folder = ({
   const isDraggingValidTodoProject =
     activeDrag?.type === DD_TYPES.todoProject &&
     todoDict[activeDrag.id].parentId !== id &&
-    activeDrag.id !== id;
+    activeDrag.id !== id &&
+    !todoDict[activeDrag.id].allChildren.includes(id);
 
   const isDroppable = isDraggingValidTodoProject;
 
@@ -59,7 +63,7 @@ const Folder = ({
     data: { type: DD_TYPES.project, id },
   });
 
-  const isRoot = indentation === 0;
+  const isBoard = indentation === 0;
 
   const unfinishedCountAll = allChildren.filter((id) =>
     isUnfinishedTask(todoDict[id])
@@ -69,7 +73,11 @@ const Folder = ({
     isUnfinishedTask(todoDict[id])
   ).length;
 
-  const showBadge = unfinishedCount > 0;
+  const isTask = isUnfinishedTask(todoDict[id]);
+
+  const useCount = isBoard ? unfinishedCountAll : unfinishedCount;
+
+  const Icon = getIconForTodo(todoTree);
 
   return (
     <>
@@ -87,12 +95,12 @@ const Folder = ({
         >
           <div className={styles.left}>
             <Badge
-              invisible={!showBadge}
+              invisible={!useCount}
               color={"warning"}
-              badgeContent={unfinishedCount}
-              variant="dot"
+              badgeContent={useCount}
+              variant={isBoard ? "standard" : "dot"}
             >
-              <FolderOpenIcon className={styles.folderIcon} />
+              <Icon className={styles.folderIcon} />
             </Badge>
             <div
               className={classNames(styles.name, {
@@ -107,7 +115,10 @@ const Folder = ({
       </div>
       {(() => {
         const items = children.filter(
-          (todo) => todoTreeIsFolder(todo) || isUnfinishedTask(todo)
+          (todo) =>
+            todoTreeIsFolder(todo) ||
+            todoTreeIsProject(todo) ||
+            isUnfinishedTask(todo)
         );
         return (
           !isDraggingProject &&
@@ -145,7 +156,7 @@ const ColOne = ({ className }: { className: string }) => {
         <Button
           variant="contained"
           onClick={() => {
-            addTodo(undefined, { name: "New Project" }, true);
+            addTodo(BOARD_ID, { name: "New Project" }, true);
           }}
         >
           Add project
